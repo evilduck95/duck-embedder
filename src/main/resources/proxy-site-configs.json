@@ -1,0 +1,45 @@
+[
+  {
+    "websiteName": "https://twitter.com",
+    "proxyWebsiteNames": [
+      {
+        "name": "https://fxtwitter.com",
+        "active": false
+      },
+      {
+        "name": "https://vxtwitter.com",
+        "active": true
+      },
+      {
+        "name": "https://girlcockx.com",
+        "active": true
+      }
+    ]
+  },
+  {
+    "websiteName": "https://x.com",
+    "proxyWebsiteNames": [
+      {
+        "name": "https://fxtwitter.com",
+        "active": false
+      },
+      {
+        "name": "https://vxtwitter.com",
+        "active": true
+      },
+      {
+        "name": "https://girlcockx.com",
+        "active": true
+      }
+    ]
+  },
+  {
+    "websiteName": "https://imgur.com",
+    "proxyWebsiteNames": [
+      {
+        "name": "https://rmgur.com",
+        "active": false
+      }
+    ]
+  }
+]
