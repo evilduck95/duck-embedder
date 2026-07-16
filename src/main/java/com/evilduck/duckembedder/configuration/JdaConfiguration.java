@@ -2,6 +2,7 @@ package com.evilduck.duckembedder.configuration;
 
 import com.evilduck.duckembedder.configuration.properties.JdaConfigProps;
 import com.evilduck.duckembedder.messaging.GuildMemberMessageListener;
+import com.evilduck.duckembedder.messaging.GuildSlashCommandListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -14,11 +15,14 @@ import java.util.EnumSet;
 public class JdaConfiguration {
 
     private final JdaConfigProps jdaConfigProps;
+    private final GuildSlashCommandListener guildSlashCommandListener;
     private final GuildMemberMessageListener guildMemberMessageListener;
 
     public JdaConfiguration(final JdaConfigProps jdaConfigProps,
+                            final GuildSlashCommandListener guildSlashCommandListener,
                             final GuildMemberMessageListener guildMemberMessageListener) {
         this.jdaConfigProps = jdaConfigProps;
+        this.guildSlashCommandListener = guildSlashCommandListener;
         this.guildMemberMessageListener = guildMemberMessageListener;
     }
 
@@ -28,6 +32,7 @@ public class JdaConfiguration {
                 jdaConfigProps.getToken(),
                 EnumSet.of(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
         ).addEventListeners(
+                guildSlashCommandListener,
                 guildMemberMessageListener
         ).build();
     }
