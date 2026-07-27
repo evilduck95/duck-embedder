@@ -33,8 +33,10 @@ public class RepositoryInitialiser {
     public void initProxyMappings() throws IOException {
         final File file = proxySiteConfigs.getFile();
         final List<ProxyMapping> proxyMappings = jsonObjectMapper.readValue(file, new TypeReference<>() {});
-        proxyMappingRepository.deleteAll();
-        proxyMappingRepository.saveAll(proxyMappings);
+        for (ProxyMapping proxy : proxyMappings) {
+            if (!proxyMappingRepository.existsById(proxy.getWebsiteName())) {
+                proxyMappingRepository.save(proxy);
+            }
+        }
     }
-
 }
