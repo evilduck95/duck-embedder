@@ -12,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class RepositoryInitialiser {
@@ -28,15 +29,19 @@ public class RepositoryInitialiser {
         this.proxyMappingRepository = proxyMappingRepository;
     }
 
-    // TODO: Make this merge with existing entries instead of overwriting.
     @PostConstruct
     public void initProxyMappings() throws IOException {
         final File file = proxySiteConfigs.getFile();
         final List<ProxyMapping> proxyMappings = jsonObjectMapper.readValue(file, new TypeReference<>() {});
         for (ProxyMapping proxy : proxyMappings) {
-            if (!proxyMappingRepository.existsById(proxy.getWebsiteName())) {
-                proxyMappingRepository.save(proxy);
-            }
+            saveDefaults(proxy);
         }
+    }
+
+    private void saveDefaults(ProxyMapping proxy) {
+        Set<ProxyMapping.Proxy> tempSet = proxy.getProxyWebsiteNames();
+        tempSet.addAll(proxyMappingRepository.findByWebsiteName(proxy.getWebsiteName()).get().getProxyWebsiteNames());
+        proxy.setProxyWebsiteNames(tempSet);
+        proxyMappingRepository.save(proxy);
     }
 }
