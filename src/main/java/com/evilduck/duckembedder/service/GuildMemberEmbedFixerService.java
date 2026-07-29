@@ -36,17 +36,7 @@ public class GuildMemberEmbedFixerService {
         final Optional<ProxyMapping> applicableMapping = proxyMappings.stream()
                 .filter(mapping -> messageContentRaw.contains(mapping.getWebsiteName()))
                 .findFirst();
-        if (applicableMapping.isPresent()) {
-            final ProxyMapping mapping = applicableMapping.get();
-//            return mapping.getProxyWebsiteNames().stream()
-//                    .filter(ProxyMapping.Proxy::isActive)
-//                    .findFirst()
-//                    .map(proxy -> {
-//                        sessionCache.addSessionProxy(message.getId(), proxy);
-//                        return messageContentRaw.replaceFirst(mapping.getWebsiteName(), proxy.getName());
-//                    });
-            replyWithEmbed(message, mapping);
-        }
+        applicableMapping.ifPresent(mapping -> replyWithEmbed(message, mapping));
     }
 
     private void replyWithEmbed(final Message originalPost,
