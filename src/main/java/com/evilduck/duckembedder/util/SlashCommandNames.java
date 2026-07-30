@@ -2,7 +2,7 @@ package com.evilduck.duckembedder.util;
 
 public enum SlashCommandNames {
 
-    DISABLE_PROXY("disableproxy");
+    SUGGEST("suggest");
 
     final String commandName;
 
