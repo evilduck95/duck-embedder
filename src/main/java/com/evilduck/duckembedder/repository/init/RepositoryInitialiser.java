@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class RepositoryInitialiser {
 
@@ -41,12 +42,13 @@ public class RepositoryInitialiser {
     }
 
     private void updateDefaults(final ProxyMapping proxy) {
-        final Set<ProxyMapping.Proxy> tempSet = proxy.getProxyWebsiteNames();
+        final Set<ProxyMapping.Proxy> defaultProxies = proxy.getProxyWebsiteNames();
         final Optional<ProxyMapping> existingMapping = proxyMappingRepository.findByWebsiteName(proxy.getWebsiteName());
         if (existingMapping.isPresent()) {
-            tempSet.addAll(existingMapping.get().getProxyWebsiteNames());
-            proxy.setProxyWebsiteNames(tempSet);
+            defaultProxies.addAll(existingMapping.get().getProxyWebsiteNames());
+            proxy.setProxyWebsiteNames(defaultProxies);
             proxyMappingRepository.save(proxy);
+            log.info("Updated default mappings for: [{}]", proxy.getWebsiteName());
         }
     }
 }
