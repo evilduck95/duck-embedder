@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class GuildMemberEmbedFixerService {
 
+    private static final Duration DEFAULT_EMBED_TIMEOUT = Duration.ofSeconds(5);
     private static final Set<EmbedType> VALID_EMBED_TYPES = Set.of(
             EmbedType.RICH,
             EmbedType.IMAGE,
@@ -47,7 +49,9 @@ public class GuildMemberEmbedFixerService {
                 final String replacedMessage = originalPost.getContentRaw().replaceFirst(proxyMapping.getWebsiteName(), proxy.getName());
                 final Message reply = originalPost.reply(replacedMessage).mentionRepliedUser(false).complete();
                 try {
-                    TimeUnit.SECONDS.sleep(5);
+                    final Duration timeout = Optional.ofNullable(proxyMapping.getMaxEmbedTime())
+                            .orElse(DEFAULT_EMBED_TIMEOUT);
+                    TimeUnit.SECONDS.sleep(timeout.getSeconds());
                 } catch (InterruptedException e) {
                     log.error("Something went wrong sleeping replying to message: {}", originalPost.getContentRaw(), e);
                     throw new RuntimeException(e);

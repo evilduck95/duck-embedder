@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
+import java.time.Duration;
 import java.util.Set;
 
 @Data
@@ -14,6 +15,7 @@ public class ProxyMapping {
 
     @Id
     private String websiteName;
+    private Duration maxEmbedTime;
     private Set<Proxy> proxyWebsiteNames;
 
     @Data
