@@ -19,16 +19,19 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class GuildMemberEmbedFixerService {
 
-    private static final Duration DEFAULT_EMBED_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration DEFAULT_EMBED_TIMEOUT = Duration.ofSeconds(3);
     private static final Set<EmbedType> VALID_EMBED_TYPES = Set.of(
             EmbedType.IMAGE,
             EmbedType.VIDEO
     );
 
     private final ProxyMappingRepository proxyMappingRepository;
+    private final List<WebsiteEmbedHandler> websiteEmbedHandlers;
 
-    public GuildMemberEmbedFixerService(final ProxyMappingRepository proxyMappingRepository) {
+    public GuildMemberEmbedFixerService(final ProxyMappingRepository proxyMappingRepository,
+                                        final List<WebsiteEmbedHandler> websiteEmbedHandlers) {
         this.proxyMappingRepository = proxyMappingRepository;
+        this.websiteEmbedHandlers = websiteEmbedHandlers;
     }
 
     public void handleMessage(final Message message) {
@@ -50,7 +53,7 @@ public class GuildMemberEmbedFixerService {
     }
 
     private boolean waitForValidMessageEmbed(final Message message, final ProxyMapping proxyMapping) {
-        log.info("Waiting for message to embed...");
+        log.info("Giving message time to embed...");
         try {
             final Duration embedTimeout = Optional.ofNullable(proxyMapping.getMaxEmbedTime())
                     .orElse(DEFAULT_EMBED_TIMEOUT);
@@ -59,11 +62,12 @@ public class GuildMemberEmbedFixerService {
             log.error("Something went wrong waiting for original post to embed: {}", message.getContentRaw(), e);
             throw new RuntimeException(e);
         }
-        if (proxyMapping.getWebsiteName().matches(".*twitter.com.*|.*x.com.*")) {
-            return messageHasValidTwitterEmbed(message);
-        } else {
-            return messageHasValidEmbed(message);
+        for (final WebsiteEmbedHandler handler : websiteEmbedHandlers) {
+            if (handler.isApplicable(proxyMapping)) {
+                return handler.hasValidEmbed(message);
+            }
         }
+        return messageHasValidEmbed(message);
     }
 
     private void replyWithEmbed(final Message originalPost,
@@ -98,26 +102,11 @@ public class GuildMemberEmbedFixerService {
         return embeds.stream().anyMatch(this::embedIsValid);
     }
 
-    private boolean messageHasValidTwitterEmbed(final Message reply) {
-        log.info("Checking twitter message embeds...");
-        final List<MessageEmbed> embeds = reply.getEmbeds();
-        return embeds.stream().anyMatch(this::isValidTwitterEmbed);
-    }
-
     private boolean embedIsValid(final MessageEmbed embed) {
         log.info("Embed type is: {} and video info is: {}", embed.getType(), embed.getVideoInfo());
         return VALID_EMBED_TYPES.contains(embed.getType()) ||
                 Objects.nonNull(embed.getImage()) ||
                 Objects.nonNull(embed.getVideoInfo());
     }
-
-    private boolean isValidTwitterEmbed(final MessageEmbed embed) {
-        final boolean isPreviewImage = Optional.ofNullable(embed.getImage())
-                .map(MessageEmbed.ImageInfo::getProxyUrl)
-                .map(url -> url.contains("media-preview"))
-                .orElse(false);
-        return !isPreviewImage || Objects.nonNull(embed.getVideoInfo());
-    }
-
 
 }
