@@ -49,17 +49,19 @@ public class Suggestion extends ListenerAdapter implements SlashCommand {
             event.deferReply().queue();
             final OptionMapping websiteNameOption = event.getOption(WEBSITE_NAME);
             final OptionMapping suggestedProxyOption = event.getOption(SUGGESTION);
+            // Both options need to be set to process
             if (Objects.nonNull(websiteNameOption) && Objects.nonNull(suggestedProxyOption)) {
-                final String websiteName = getAsRoot(websiteNameOption.getAsString());
-                final ProxySuggestion proxySuggestion = proxySuggestionRepository.findById(websiteName)
-                        .orElse(new ProxySuggestion(websiteName, new HashMap<>()));
-                final String suggestedProxy = getAsRoot(suggestedProxyOption.getAsString());
-                final Map<String, Integer> existingVotes = proxySuggestion.getProxyVotes();
-                final Integer votes = existingVotes.getOrDefault(suggestedProxy, 0);
-                existingVotes.put(suggestedProxy, votes + 1);
-                proxySuggestion.setProxyVotes(new HashMap<>(existingVotes));
+                final ProxySuggestion proxySuggestion = findProxySuggestionForWebsite(websiteNameOption);
+
+                // Get the root of the website (we don't want /any/paths/anywhere)
+                final String suggestedProxy = getAsRootUrl(suggestedProxyOption.getAsString());
+                // Increment the votes for this suggestion (or start a new vote for it)
+                final Map<String, Integer> updatedVotes = incrementVotesForProxy(proxySuggestion, suggestedProxy);
+                proxySuggestion.setProxyVotes(updatedVotes);
                 proxySuggestionRepository.save(proxySuggestion);
-                event.getHook().sendMessage("Saved %s proxy suggestion for %s".formatted(suggestedProxy, websiteName))
+
+                // Let the user know we processed
+                event.getHook().sendMessage("Saved %s proxy suggestion for %s".formatted(suggestedProxy, proxySuggestion.getWebsiteName()))
                         .setSuppressEmbeds(true)
                         .setEphemeral(true)
                         .queue();
@@ -71,7 +73,23 @@ public class Suggestion extends ListenerAdapter implements SlashCommand {
         }
     }
 
-    private String getAsRoot(final String websiteName) {
+    // Get the current vote (or 0) and increment the map entry. Return a copy of the map.
+    private Map<String, Integer> incrementVotesForProxy(final ProxySuggestion proxySuggestion,
+                                                        final String suggestedProxy) {
+        final Map<String, Integer> voteMap = new HashMap<>(proxySuggestion.getProxyVotes());
+        final Integer votesForProxy = voteMap.getOrDefault(suggestedProxy, 0);
+        voteMap.put(suggestedProxy, votesForProxy + 1);
+        return voteMap;
+    }
+
+    // Find the database entry for the mapping, return a fresh one if there isn't one, so we can always accept.
+    private ProxySuggestion findProxySuggestionForWebsite(final OptionMapping optionMapping) {
+        final String websiteName = getAsRootUrl(optionMapping.getAsString());
+        return proxySuggestionRepository.findById(websiteName)
+                .orElse(new ProxySuggestion(websiteName, new HashMap<>()));
+    }
+
+    private String getAsRootUrl(final String websiteName) {
         final URI websiteUri = websiteName.startsWith(HTTPS_PROTOCOL) ?
                 URI.create(websiteName) :
                 URI.create(HTTPS_PROTOCOL + websiteName);
