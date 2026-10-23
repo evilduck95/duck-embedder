@@ -49,6 +49,9 @@ public class RepositoryInitialiser {
             proxy.setProxyWebsiteNames(defaultProxies);
             proxyMappingRepository.save(proxy);
             log.info("Updated default mappings for: [{}]", proxy.getWebsiteName());
+        } else {
+            proxyMappingRepository.save(proxy);
+            log.info("Added default proxies for: [{}]", proxy.getWebsiteName());
         }
     }
 }
