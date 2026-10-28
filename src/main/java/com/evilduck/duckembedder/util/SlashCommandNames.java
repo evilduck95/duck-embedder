@@ -2,7 +2,8 @@ package com.evilduck.duckembedder.util;
 
 public enum SlashCommandNames {
 
-    SUGGEST("suggest");
+    SUGGEST("suggest"),
+    STOP("stop");
 
     final String commandName;
 
