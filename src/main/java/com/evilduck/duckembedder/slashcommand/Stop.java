@@ -23,7 +23,7 @@ public class Stop extends ListenerAdapter implements SlashCommand{
     @Override
     public void init(final JDA jda) {
         log.info("Initialising Stop slash command");
-        jda.updateCommands().addCommands(
+        jda.upsertCommand(
                 Commands.slash(SlashCommandNames.STOP.commandName(), "Stops the bot.")
         ).queue();
         jda.addEventListener(this);
