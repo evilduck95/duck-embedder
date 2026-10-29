@@ -2,6 +2,7 @@ package com.evilduck.duckembedder.service;
 
 import com.evilduck.duckembedder.model.ProxyMapping;
 import com.evilduck.duckembedder.repository.ProxyMappingRepository;
+import com.evilduck.duckembedder.repository.StoppedGuildsRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.EmbedType;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,30 +27,34 @@ public class GuildMemberEmbedFixerService {
     );
 
     private final ProxyMappingRepository proxyMappingRepository;
+    private final StoppedGuildsRepository stoppedGuildsRepository;
     private final List<WebsiteEmbedHandler> websiteEmbedHandlers;
 
     public GuildMemberEmbedFixerService(final ProxyMappingRepository proxyMappingRepository,
-                                        final List<WebsiteEmbedHandler> websiteEmbedHandlers) {
+                                        final List<WebsiteEmbedHandler> websiteEmbedHandlers, StoppedGuildsRepository stoppedGuildsRepository) {
         this.proxyMappingRepository = proxyMappingRepository;
+        this.stoppedGuildsRepository = stoppedGuildsRepository;
         this.websiteEmbedHandlers = websiteEmbedHandlers;
     }
 
     public void handleMessage(final Message message) {
-        final String messageContentRaw = message.getContentRaw();
-        final List<ProxyMapping> proxyMappings = proxyMappingRepository.findAll();
-        final Optional<ProxyMapping> applicableMapping = proxyMappings.stream()
-                .filter(mapping -> messageContentRaw.contains(mapping.getWebsiteName()))
-                .findFirst();
-        applicableMapping.ifPresent(mapping -> {
-            final Duration embedTimeout = Optional.ofNullable(mapping.getMaxEmbedTime())
-                    .orElse(DEFAULT_EMBED_TIMEOUT);
-            if (!waitForValidMessageEmbed(message, mapping)) {
-                replyWithEmbed(message, mapping, embedTimeout);
-            } else {
-                log.info("Original message embed is valid");
-            }
-            log.info("Complete!");
-        });
+        if(!stoppedGuildsRepository.existsById(message.getGuildId())) {
+            final String messageContentRaw = message.getContentRaw();
+            final List<ProxyMapping> proxyMappings = proxyMappingRepository.findAll();
+            final Optional<ProxyMapping> applicableMapping = proxyMappings.stream()
+                    .filter(mapping -> messageContentRaw.contains(mapping.getWebsiteName()))
+                    .findFirst();
+            applicableMapping.ifPresent(mapping -> {
+                final Duration embedTimeout = Optional.ofNullable(mapping.getMaxEmbedTime())
+                        .orElse(DEFAULT_EMBED_TIMEOUT);
+                if (!waitForValidMessageEmbed(message, mapping)) {
+                    replyWithEmbed(message, mapping, embedTimeout);
+                } else {
+                    log.info("Original message embed is valid");
+                }
+                log.info("Complete!");
+            });
+        }
     }
 
     private boolean waitForValidMessageEmbed(final Message message, final ProxyMapping proxyMapping) {

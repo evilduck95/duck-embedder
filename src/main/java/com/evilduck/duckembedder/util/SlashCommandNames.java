@@ -3,7 +3,8 @@ package com.evilduck.duckembedder.util;
 public enum SlashCommandNames {
 
     SUGGEST("suggest"),
-    STOP("stop");
+    STOP("stop"),
+    RESUME("resume");
 
     final String commandName;
 
