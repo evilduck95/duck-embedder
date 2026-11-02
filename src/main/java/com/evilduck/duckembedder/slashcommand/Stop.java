@@ -33,13 +33,11 @@ public class Stop extends ListenerAdapter implements SlashCommand{
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         //On second thought we might not even need the conditional at all if the repository doesn't allow duplicates.
         if(event.getName().equals(SlashCommandNames.STOP.commandName())) {
-            if (!stoppedGuildsRepository.existsById(event.getGuild().getId())) {
-                event.deferReply().queue();
-                StoppedGuild guild = new StoppedGuild(event.getGuild().getId());
-                stoppedGuildsRepository.save(guild);
-                log.info("Stopped guild: " + event.getGuild().getId());
-                event.getHook().sendMessage("The bot has been stopped.").queue();
-            }
+            event.deferReply().queue();
+            StoppedGuild guild = new StoppedGuild(event.getGuild().getId());
+            stoppedGuildsRepository.save(guild);
+            log.info("Stopped guild: " + event.getGuild().getId());
+            event.getHook().sendMessage("I have stopped").queue();
         }
     }
 }

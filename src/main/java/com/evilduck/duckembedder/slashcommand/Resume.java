@@ -31,12 +31,10 @@ public class Resume extends ListenerAdapter implements SlashCommand {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals(SlashCommandNames.RESUME.commandName())) {
-            if (stoppedGuildsRepository.existsById(event.getGuild().getId())) {
-                event.deferReply().queue();
-                stoppedGuildsRepository.deleteById(event.getGuild().getId());
-                log.info("Resumed guild: " + event.getGuild().getId());
-                event.getHook().sendMessage("The bot has been resumed.").queue();
-            }
+            event.deferReply().queue();
+            stoppedGuildsRepository.deleteById(event.getGuild().getId());
+            log.info("Resumed guild: " + event.getGuild().getId());
+            event.getHook().sendMessage("I have resumed").queue();
         }
     }
 }
