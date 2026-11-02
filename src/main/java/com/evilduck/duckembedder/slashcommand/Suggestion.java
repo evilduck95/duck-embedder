@@ -35,7 +35,7 @@ public class Suggestion extends ListenerAdapter implements SlashCommand {
     @Override
     public void init(final JDA jda) {
         log.info("Initialising Suggestion slash command");
-        jda.updateCommands().addCommands(
+        jda.upsertCommand(
                         Commands.slash(SlashCommandNames.SUGGEST.commandName(), "Adds a suggested proxy for a popular website for better embedding")
                                 .addOption(OptionType.STRING, WEBSITE_NAME, "The website that won't embed properly", true)
                                 .addOption(OptionType.STRING, SUGGESTION, "The website that would properly embed your links", true))
