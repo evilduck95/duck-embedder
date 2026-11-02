@@ -31,7 +31,6 @@ public class Stop extends ListenerAdapter implements SlashCommand{
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        //On second thought we might not even need the conditional at all if the repository doesn't allow duplicates.
         if(event.getName().equals(SlashCommandNames.STOP.commandName())) {
             event.deferReply().queue();
             StoppedGuild guild = new StoppedGuild(event.getGuild().getId());

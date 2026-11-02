@@ -31,14 +31,15 @@ public class GuildMemberEmbedFixerService {
     private final List<WebsiteEmbedHandler> websiteEmbedHandlers;
 
     public GuildMemberEmbedFixerService(final ProxyMappingRepository proxyMappingRepository,
-                                        final List<WebsiteEmbedHandler> websiteEmbedHandlers, StoppedGuildsRepository stoppedGuildsRepository) {
+                                        final List<WebsiteEmbedHandler> websiteEmbedHandlers, final StoppedGuildsRepository stoppedGuildsRepository) {
         this.proxyMappingRepository = proxyMappingRepository;
         this.stoppedGuildsRepository = stoppedGuildsRepository;
         this.websiteEmbedHandlers = websiteEmbedHandlers;
     }
 
     public void handleMessage(final Message message) {
-        if(!stoppedGuildsRepository.existsById(message.getGuildId())) {
+        boolean existsByGuildId = stoppedGuildsRepository.existsById(message.getGuildId());
+        if(!existsByGuildId) {
             final String messageContentRaw = message.getContentRaw();
             final List<ProxyMapping> proxyMappings = proxyMappingRepository.findAll();
             final Optional<ProxyMapping> applicableMapping = proxyMappings.stream()
